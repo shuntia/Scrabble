@@ -1,6 +1,6 @@
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -9,7 +9,8 @@ public class TileBag {
     static HashMap<Character, Byte> letterValues = new HashMap<>();
     static{
         try {
-            FileInputStream fi = new FileInputStream("resources/letter_points.txt");
+            InputStream fi;
+            fi = TileBag.class.getResourceAsStream("resources/letter_points.txt");
             byte points=0;
             while(fi.available()>0){
                 char letter = (char)fi.read();
@@ -32,10 +33,10 @@ public class TileBag {
         }
     }
     public TileBag(int sets, boolean superScrabble){
-        FileInputStream fi = null;
+        InputStream fi = null;
         byte distribution[] = new byte[26];
         try {
-            fi = new FileInputStream(superScrabble?"resources/tile_super.txt":"resources/tile.txt");
+            fi = TileBag.class.getResourceAsStream(superScrabble?"resources/tile_super.txt":"resources/tile.txt");
             byte count=1;
             while(fi.available()>0){
                 char letter = (char)fi.read();

@@ -1,6 +1,5 @@
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -10,7 +9,7 @@ public class Dictionary {
     static final HashMap<Character, Byte> letterValues = new HashMap<>();
     static {
         System.out.println("Loading dictionary...");
-        try (Scanner sc = new Scanner(new File("resources/words_alpha.txt"))) {
+        try (Scanner sc = new Scanner(Dictionary.class.getResourceAsStream("resources/words_alpha.txt"))) {
             while(sc.hasNext()){
                 words.add(sc.nextLine());
             }
@@ -19,7 +18,7 @@ public class Dictionary {
         }
         System.out.println("Loading letter points...");
         try {
-            FileInputStream fi = new FileInputStream("resources/letter_points.txt");
+            InputStream fi = Dictionary.class.getResourceAsStream("resources/letter_points.txt");
             byte points=0;
             while(fi.available()>0){
                 char letter = (char)fi.read();

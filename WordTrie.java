@@ -1,5 +1,5 @@
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -79,7 +79,7 @@ public class WordTrie {
 
     public void loadPoints(){
         try {
-            FileInputStream fi = new FileInputStream("resources/letter_points.txt");
+            InputStream fi = WordTrie.class.getResourceAsStream("resources/letter_points.txt");
             byte pts = 0;
             while(fi.available()>0){
                 char letter = (char)fi.read();
