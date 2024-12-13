@@ -20,11 +20,13 @@ public class Main{
         log("board made");
         log("creating player");
         HumanPlayer player = new HumanPlayer("test",bag, trie, board);
+        HumanPlayer player2 = new HumanPlayer("test2",bag, trie, board);
         log("player created");
         log("player taking turn");
         while(true){
             Log.log(board);
             player.takeTurn();
+            player2.takeTurn();
         }
         /*
         TileBag bag = new TileBag();

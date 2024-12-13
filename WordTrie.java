@@ -1,4 +1,3 @@
-import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -34,7 +33,7 @@ public class WordTrie {
     }
     public void loadFile(String filename, Boolean isOrdered){
         try {
-            Scanner sc = new Scanner(new File(filename));
+            Scanner sc = new Scanner(WordTrie.class.getResourceAsStream(filename));
             ArrayList<TrieNode> nodes = new ArrayList<>();
             nodes.add(root);
             TrieNode node = root;
