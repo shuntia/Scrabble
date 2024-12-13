@@ -24,7 +24,7 @@ public class Main{
         log("player created");
         log("player taking turn");
         while(true){
-            Log.log(board);
+            Log.log("\n"+board);
             player.takeTurn();
             player2.takeTurn();
         }

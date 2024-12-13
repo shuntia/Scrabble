@@ -1,7 +1,6 @@
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Scanner;
 
 public class WordTrie {
     public final byte[] letterValues = new byte[26];
@@ -33,13 +32,21 @@ public class WordTrie {
     }
     public void loadFile(String filename, Boolean isOrdered){
         try {
-            Scanner sc = new Scanner(WordTrie.class.getResourceAsStream(filename));
+            InputStream sc = WordTrie.class.getResourceAsStream(filename);
             ArrayList<TrieNode> nodes = new ArrayList<>();
             nodes.add(root);
             TrieNode node = root;
             String word="", lastWord="";
-            while(sc.hasNext()){
-                word=sc.nextLine();
+            while(sc.available()>0){
+                StringBuilder sb = new StringBuilder();
+                char ch;
+                while(sc.available()>0 && Character.isAlphabetic(ch=(char)sc.read())){
+                    if(ch=='\n'){
+                        break;
+                    }
+                    sb.append(ch);
+                }
+                word = sb.toString();
                 if(isOrdered){
                     if(word.compareTo(lastWord)<0){
                         nodes.clear();
