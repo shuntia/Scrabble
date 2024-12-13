@@ -97,9 +97,9 @@ public class HumanPlayer extends Player {
                 valid = false;
             }
             catch(Exception e){
-                Log.log(e);
-                Log.println("Unexpected error: "+e.getLocalizedMessage());
-                throw new RuntimeException(e);
+                e.printStackTrace(Log.logstream);
+                Log.println("Unexpected error: "+e.getMessage());
+                Runtime.getRuntime().exit(1);
             }
         }
     }

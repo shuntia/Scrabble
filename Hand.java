@@ -28,6 +28,14 @@ public class Hand {
         return str.toString();
     }
 
+    public StringBuilder toStringBuilder(){
+        StringBuilder str = new StringBuilder();
+        for (Tile t : tiles) {
+            str.append(t);
+        }
+        return str;
+    }
+
     public HashSet<Tile> getTiles() {
         return tiles;
     }

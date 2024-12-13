@@ -15,6 +15,7 @@ public class Main{
         log("is 'hello' a word? "+trie.isWord("hello"));
         log("is 'helloo' a word? "+trie.isWord("helloo"));
         log("how many points is 'hello'? "+trie.checkPoint("hello"));
+        log("What can be made from 'hello'? "+trie.viable("hello"));
         log("making board");
         Board board = new Board(20,20,trie);
         log("board made");
@@ -24,7 +25,6 @@ public class Main{
         log("player created");
         log("player taking turn");
         while(true){
-            Log.log("\n"+board);
             player.takeTurn();
             player2.takeTurn();
         }

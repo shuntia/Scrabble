@@ -8,4 +8,8 @@ public enum Orientation {
         this.dx = dx;
         this.dy = dy;
     }
+
+    public Orientation opposite() {
+        return this == HORIZONTAL ? VERTICAL : HORIZONTAL;
+    }
 }

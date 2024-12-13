@@ -127,7 +127,7 @@ public class Board {
         for(int i=0; i<word.length(); i++){
             int nx = x + i*dx + width/2;
             int ny = y + i*dy + height/2;
-            if(board[nx][ny]!=0||(nx==width/2 && ny==height/2)){
+            if(board[nx][ny]!=0||(nx==width/2 && ny==height/2)||(board[nx][ny]==0&&adjacent(nx, ny)!=null)){
                 overlap=true;
             }
             if(board[nx][ny]!=word.charAt(i)){
@@ -175,6 +175,26 @@ public class Board {
         return str.isEmpty()?null:str.toString();
     }
 
+    public Orientation adjacent(int x, int y){
+        if(board[x-1][y]!=0||board[x+1][y]!=0){
+            return Orientation.HORIZONTAL;
+        }
+        if(board[x][y-1]!=0||board[x][y+1]!=0){
+            return Orientation.VERTICAL;
+        }
+        return null;
+    }
+
+    public Orientation inBetween(int x, int y){
+        if(board[x-1][y]!=0&&board[x+1][y]!=0){
+            return Orientation.HORIZONTAL;
+        }
+        if(board[x][y-1]!=0&&board[x][y+1]!=0){
+            return Orientation.VERTICAL;
+        }
+        return null;
+    }
+
     public PlayedTile[] getPlayedTiles() {
         List<PlayedTile> playedTiles = new ArrayList<>();
         for (int i = 0; i < height; i++) {
@@ -207,5 +227,10 @@ public class Board {
             }
         }
         return null;
+    }
+    public int[] computeOffset(int x, int y, Orientation o, int offset){
+        int dx = o.dx;
+        int dy = o.dy;
+        return new int[]{x-offset*dx, y-offset*dy};
     }
 }

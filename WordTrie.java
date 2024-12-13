@@ -71,12 +71,14 @@ public class WordTrie {
                     node = node.children[c-'a'];
                     nodes.add(node);
                 }
+                Log.dbg(("loaded "+word));
                 node.endOfWord = true;
                 lastWord = word;
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+        root.endOfWord = false;
     }
 
     public void loadFile(String filename){
@@ -147,6 +149,20 @@ public class WordTrie {
         words.removeIf(word -> word.contains(" ")); // Remove words containing spaces
         return words;
     }
+
+    public HashSet<String> viable(char[] hand) {
+        HashSet<String> words = new HashSet<>();
+        words.addAll(viableRecurse("", root, hand));
+        words.removeIf(word -> word.contains(" ")); // Remove words containing spaces
+        return words;
+    }
+
+    public HashSet<String> viable(String hand) {
+        HashSet<String> words = new HashSet<>();
+        words.addAll(viableRecurse("", root, hand.toCharArray()));
+        words.removeIf(word -> word.contains(" ")); // Remove words containing spaces
+        return words;
+    }
     
     private HashSet<String> viableRecurse(String prefix, TrieNode node, char[] hand) {
         HashSet<String> words = new HashSet<>();
@@ -198,6 +214,10 @@ public class WordTrie {
             }
         }
         return maxWord;
+    }
+
+    public String best(String word){
+        return best(viable(word).toArray(String[]::new));
     }
 }
 
