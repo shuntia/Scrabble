@@ -1,4 +1,5 @@
 
+import java.awt.event.KeyEvent;
 import java.util.Arrays;
 
 public class HumanPlayer extends Player {
@@ -8,6 +9,10 @@ public class HumanPlayer extends Player {
         super(bag, trie, board);
         this.name = name;
     }
+    public HumanPlayer(TileBag bag, WordTrie trie, Board board) {
+        super(bag, trie, board);
+        this.name = "Human";
+    }
     public HumanPlayer(String name, TileBag bag, WordTrie trie, Board board, boolean cheats) {
         super(bag, trie, board);
         this.name = name;
@@ -15,41 +20,53 @@ public class HumanPlayer extends Player {
     }
     @Override
     public void takeTurn(){
-        Log.println("Starting player turn");
+        Log.log("Starting player turn");
         bag.fill(hand);
-        Log.println(board);
         boolean valid = false;
         while(!valid){
-            Log.println("Player "+name+" has hand " + hand);
+            if(!Io.GUI){
+                Io.println("Hand is "+hand);
+            }
             try{
                 if(cheats){
-                    Log.println(trie.viable(hand));
-                    Log.println("best word is: "+trie.best(trie.viable(hand).toArray(new String[0]))+" worth "+trie.checkPoint(trie.best(trie.viable(hand).toArray(new String[0]))));
+                    Io.println(trie.viable(hand));
+                    Io.println("best word is: "+trie.best(trie.viable(hand).toArray(new String[0]))+" worth "+trie.checkPoint(trie.best(trie.viable(hand).toArray(new String[0]))));
                 }
-                Log.print("Enter a word:");
-                String word = System.console().readLine();
+                String word = Io.readLine();
                 if(word.charAt(0)=='!'){
                     if(word.contains("cheats")){
                         if(word.contains("on")){
                             cheats = true;
-                            Log.println("Cheats enabled");
+                            Io.println("Cheats enabled");
                         }else{
                             cheats = false;
-                            Log.println("Cheats disabled");
+                            Io.println("Cheats disabled");
                         }
                         continue;
                     }
                     if(word.contains("exchange")){
                         bag.exchange(hand);
-                        Log.println("Hand exchanged");
-                        Log.println("Hand is now "+hand);
+                        Io.println("Hand exchanged");
+                        Io.println("Hand is now "+hand);
                         return;
+                    }
+                    if(word.contains("pass")){
+                        Io.println("Player "+name+" has passed");
+                        return;
+                    }
+                    if(word.contains("quit")){
+                        Io.println("Player "+name+" has quit");
+                        Runtime.getRuntime().exit(0);
+                    }
+                    if(word.contains("isword")){
+                        Io.println("Word is "+trie.isWord(word.substring(8)));
+                        continue;
                     }
                 }
                 boolean alpha=true;
                 for(char c : word.toCharArray()){
                     if(c<'a' || c>'z'){
-                        Log.println("Invalid characters contained: "+c);
+                        Io.println("Invalid characters contained: "+c);
                         alpha = false;
                         break;
                     }
@@ -59,46 +76,85 @@ public class HumanPlayer extends Player {
                 }
                 if(trie.isWord(word) && hand.contains(word)){
                     valid = true;
-                    Log.println("Valid word!");
-                    Log.println("Word is worth "+trie.checkPoint(word)+" points");
-                    Log.print("Enter x:");
-                    int x = Integer.parseInt(System.console().readLine());
-                    Log.print("Enter y:");
-                    int y = Integer.parseInt(System.console().readLine());
-                    Log.print("Enter orientation:");
-                    Orientation orientation=null;
-                    while(true){
-                        try{
-                            orientation = Orientation.valueOf(System.console().readLine().toUpperCase());
-                            break;
-                        }catch(IllegalArgumentException e){
-                            Log.println("Accepted orientations are: " + Arrays.toString(Orientation.values()));
-                            Log.print("Invalid orientation, try again:");
+                    Io.println("Valid word!\nWord is worth "+trie.checkPoint(word)+" points");
+                    if(!Io.GUI){
+                        Log.print("Enter x:");
+                        int x = Integer.parseInt(System.console().readLine());
+                        Log.print("Enter y:");
+                        int y = Integer.parseInt(System.console().readLine());
+                        Log.print("Enter orientation:");
+                        Orientation orientation=null;
+                        while(true){
+                            try{
+                                orientation = Orientation.valueOf(System.console().readLine().toUpperCase());
+                                break;
+                            }catch(IllegalArgumentException e){
+                                Io.println("Accepted orientations are: " + Arrays.toString(Orientation.values()));
+                                Log.print("Invalid orientation, try again:");
+                            }
+                        }
+                        Log.print("Enter offset:");
+                        int offset = Integer.parseInt(System.console().readLine());
+                        if(board.fits(x, y, word, orientation)){
+                            board.play(x, y, word, orientation, offset);
+                            hand.play(word);
+                            Io.println("Word played!");
+                            Log.log("\n"+board);
+                        }else{
+                            Io.println("Word does not fit!");
+                            valid = false;
+                            continue;
+                        }
+                        Io.println("Hand is now "+hand);
+                    }else{
+                        Io.println("move with arrow keys, spin with z, enter to confirm");
+                        //set position
+                        int x=0;
+                        int y=0;
+                        Orientation orientation = Orientation.HORIZONTAL;
+                        int k;
+                        while (true) { 
+                            k=Io.getKeyCode();
+                            if(k==0){
+                                continue;
+                            }else{
+                                Log.log("Key pressed: "+k);
+                            }
+                            if(k==KeyEvent.VK_UP){
+                                y--;
+                            }
+                            if(k==KeyEvent.VK_DOWN){
+                                y++;
+                            }
+                            if(k==KeyEvent.VK_LEFT){
+                                x--;
+                            }
+                            if(k==KeyEvent.VK_RIGHT){
+                                x++;
+                            }
+                            if(k==KeyEvent.VK_Z){
+                                orientation = orientation.opposite();
+                            }
+                            if(k==KeyEvent.VK_ENTER){
+                                break;
+                            }
+                            Graphics.showBoard(board.overlay(x, y, orientation, word));
                         }
                     }
-                    Log.print("Enter offset:");
-                    int offset = Integer.parseInt(System.console().readLine());
-                    if(board.fits(x, y, word, orientation)){
-                        board.play(x, y, word, orientation, offset);
-                        hand.play(word);
-                        Log.println("Word played!");
-                        Log.log("\n"+board);
-                    }else{
-                        Log.println("Word does not fit!");
-                        valid = false;
-                        continue;
-                    }
-                    Log.println("Hand is now "+hand);
                 }else{
-                    Log.println(trie.isWord(word)?"You don't have enough letters!":"Word does not exist!");
+                    Io.println(trie.isWord(word)?"You don't have enough letters!":"Word does not exist!");
                 }
             }catch(NumberFormatException e){
-                Log.println("Invalid input!");
+                Io.println("Invalid input!");
+                valid = false;
+            }
+            catch(StringIndexOutOfBoundsException e){
+                Io.println("Invalid input!");
                 valid = false;
             }
             catch(Exception e){
                 e.printStackTrace(Log.logstream);
-                Log.println("Unexpected error: "+e.getMessage());
+                Io.println("Unexpected error: "+e.getMessage());
                 Runtime.getRuntime().exit(1);
             }
         }

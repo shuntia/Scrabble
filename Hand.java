@@ -31,7 +31,7 @@ public class Hand {
     public StringBuilder toStringBuilder(){
         StringBuilder str = new StringBuilder();
         for (Tile t : tiles) {
-            str.append(t);
+            str.append(Character.toLowerCase(t.letter));
         }
         return str;
     }

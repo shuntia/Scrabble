@@ -17,7 +17,7 @@ public class Board {
     }
 
     public char get(int x, int y) {
-        return board[x + width / 2][y + height / 2];
+        try{return board[x + width / 2][y + height / 2];}catch(ArrayIndexOutOfBoundsException e){return 0;}
     }
 
     public int play(int x, int y, String word, Orientation orientation) {
@@ -142,60 +142,69 @@ public class Board {
             }
         }
         if(same)Log.log("Word is the same");
-        if(!overlap)Log.log("Word does not overlap at all");
-        return (!same)&&overlap;
-    }
-
-    public String around(int x, int y, char center){
+        return (!same) && overlap;
+        }
+        public int pointsIf(int x, int y, String word, Orientation orientation){
+            int pts=0;
+            int dx = orientation.dx;
+            int dy = orientation.dy;
+            for(int i=0; i<word.length(); i++){
+                if(board[x + i*dx + width/2][y + i*dy + height/2]!=0 && board[x + i*dx + width/2][y + i*dy + height/2]-'a'<0){
+                    pts+=board[x + i*dx + width/2][y + i*dy + height/2]+trie.checkPoint(word.charAt(i));
+                }
+            }
+            return pts;
+        }
+        public String around(int x, int y, char center) {
         StringBuilder str = new StringBuilder();
-        //horizontally existing
-        if(board[x-1][y]!=0||board[x+1][y]!=0){
-            //traverse to the left edge
-            while(x>0 && board[x-1][y]!=0){
-                x--;
+        // horizontally existing
+        if (get(x - 1, y) != 0 || get(x + 1, y) != 0) {
+            // traverse to the left edge
+            while (x > 0 && get(x - 1, y) != 0) {
+            x--;
             }
-            //traverse to the right edge
-            while(x<width && board[x][y]!=0){
-                str.append(board[x][y]);
-                x++;
-            }
-        }
-        //vertically existing
-        if(board[x][y-1]!=0){
-            //traverse to the top edge
-            while(y>0 && board[x][y-1]!=0){
-                y--;
-            }
-            //traverse to the bottom edge
-            while(y<height && board[x][y]!=0){
-                str.append(board[x][y]);
-                y++;
+            // traverse to the right edge
+            while (x < width && get(x, y) != 0) {
+            str.append(get(x, y));
+            x++;
             }
         }
-        return str.isEmpty()?null:str.toString();
-    }
+        // vertically existing
+        if (get(x, y - 1) != 0) {
+            // traverse to the top edge
+            while (y > 0 && get(x, y - 1) != 0) {
+            y--;
+            }
+            // traverse to the bottom edge
+            while (y < height && get(x, y) != 0) {
+            str.append(get(x, y));
+            y++;
+            }
+        }
+        return str.isEmpty() ? null : str.toString();
+        }
 
-    public Orientation adjacent(int x, int y){
-        if(board[x-1][y]!=0||board[x+1][y]!=0){
+        public Orientation adjacent(int x, int y) {
+        if (get(x - 1, y) != 0 || get(x + 1, y) != 0) {
             return Orientation.HORIZONTAL;
         }
-        if(board[x][y-1]!=0||board[x][y+1]!=0){
+        if (get(x, y - 1) != 0 || get(x, y + 1) != 0) {
             return Orientation.VERTICAL;
         }
         return null;
-    }
+        }
 
-    public Orientation inBetween(int x, int y){
-        if(board[x-1][y]!=0&&board[x+1][y]!=0){
+        public Orientation inBetween(int x, int y) {
+        if (get(x - 1, y) != 0 && get(x + 1, y) != 0) {
             return Orientation.HORIZONTAL;
         }
-        if(board[x][y-1]!=0&&board[x][y+1]!=0){
+        if (get(x, y - 1) != 0 && get(x, y + 1) != 0) {
             return Orientation.VERTICAL;
         }
         return null;
-    }
+        }
 
-    public PlayedTile[] getPlayedTiles() {
+        public PlayedTile[] getPlayedTiles() {
         List<PlayedTile> playedTiles = new ArrayList<>();
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -232,5 +241,15 @@ public class Board {
         int dx = o.dx;
         int dy = o.dy;
         return new int[]{x-offset*dx, y-offset*dy};
+    }
+    public Board overlay(int x, int y, Orientation o, String word){
+        int w=width/2, h=height/2;
+        Board overlay = new Board(width, height, trie);
+        for(int i=-w; i<w; i++){
+            for(int j=-h; j<h; j++){
+                overlay.set(i, j, word.charAt(i));
+            }
+        }
+        return overlay;
     }
 }

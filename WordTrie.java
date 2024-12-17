@@ -1,15 +1,16 @@
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 
 public class WordTrie {
     public final byte[] letterValues = new byte[26];
-    public final TrieNode root = new TrieNode();
+    final TrieNode root = new TrieNode();
     public WordTrie(){
     }
     public void loadEverything(){
         loadPoints();
-        loadFile("resources/scrabble_words.txt");
+        loadFile("resources/scrabble_words.txt", false);
     }
     public void addWord(String word){
         TrieNode node = root;
@@ -57,7 +58,7 @@ public class WordTrie {
                     for(int j=nodes.size()-1; j>=i; j--){
                         nodes.remove(j);
                     }
-                    node = nodes.get(nodes.size()-1);
+                    node = nodes.isEmpty()?root:nodes.get(nodes.size()-1);
                 }else{
                     node = root;
                 }
@@ -71,18 +72,18 @@ public class WordTrie {
                     node = node.children[c-'a'];
                     nodes.add(node);
                 }
-                Log.dbg(("loaded "+word));
                 node.endOfWord = true;
                 lastWord = word;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.log("Failed to load file "+filename+"!");
+            e.printStackTrace(Log.logstream);
         }
         root.endOfWord = false;
     }
 
     public void loadFile(String filename){
-        loadFile(filename, false);
+        loadFile(filename, true);
     }
 
     public void loadPoints(){
@@ -229,6 +230,10 @@ class TrieNode{
         StringBuilder str = new StringBuilder();
         toStringHelper(this, new StringBuilder(), str);
         return str.toString();
+    }
+
+    public String toStringArray(){
+        return Arrays.toString(children);
     }
 
     private void toStringHelper(TrieNode node, StringBuilder prefix, StringBuilder result) {

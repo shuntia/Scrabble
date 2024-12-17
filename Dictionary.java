@@ -14,7 +14,7 @@ public class Dictionary {
                 words.add(sc.nextLine());
             }
         }catch(Exception ex){
-            ex.printStackTrace();
+            ex.printStackTrace(Log.logstream);
         }
         System.out.println("Loading letter points...");
         try {
@@ -30,7 +30,7 @@ public class Dictionary {
             }
             fi.close();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(Log.logstream);
         }
     }
     public static boolean isWord(String word){
