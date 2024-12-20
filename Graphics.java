@@ -1,5 +1,6 @@
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -12,19 +13,20 @@ import javax.swing.text.StyledDocument;
 
 public class Graphics {
     private static final Object enterLock;
-    private static final Object lock;
     private static final JFrame frame;
     private static final JPanel panel;
     private static final JTextPane board;
     private static final JLabel message;
-    private static final JLabel hand;
+    private  static final JLabel hand;
     private static final JLabel cheats;
     private static final JTextArea input;
     private static final JLabel inputLabel;
-    private static KeyEvent lastkey;
+    private static final KeyEvent[] keybuffer;
+    private static byte keybufferindex;
+    private static byte keybufferhead;
 
     static {
-        lock = new Object();
+        keybuffer = new KeyEvent[256];
         enterLock = new Object();
         frame = new JFrame("Scrabble");
         panel = new JPanel();
@@ -50,9 +52,12 @@ public class Graphics {
         message.setMinimumSize(new java.awt.Dimension(message.getMinimumSize().width, 100));
         input.setMaximumSize(new java.awt.Dimension(input.getMaximumSize().width, 20));
         cheats.setMinimumSize(new java.awt.Dimension(cheats.getMinimumSize().width, 100));
+        cheats.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+        cheats.setVisible(false);
         panel.add(board);
         panel.add(hand);
         panel.add(message);
+        panel.add(cheats);
         panel.add(inputPanel);
         cheats.setFont(f);
         board.setFont(f);
@@ -65,31 +70,113 @@ public class Graphics {
         input.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+                Log.log(e.getKeyCode());
+                Log.log(e.getKeyChar());
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    synchronized (enterLock) {enterLock.notify();}
-                }else{
-                    lastkey = e;
-                    synchronized (lock) {
-                        lock.notify();
+                    synchronized (enterLock) {
+                        enterLock.notify();
                     }
+                }
+                keybuffer[keybufferindex++] = e;
+                synchronized (keybuffer) {
+                    keybuffer.notify();
                 }
             }
         });
     }
-
-    public static String input() {
-        try {
-            synchronized (enterLock) {
-                enterLock.wait();
+    public static void dispose(){
+        frame.dispose();
+    }
+    public static KeyEvent[] getBuffer(){
+        return keybuffer;
+    }
+    public static KeyEvent[] getKeyTill(int code) {
+        KeyEvent[] ret = new KeyEvent[256];
+        byte i = 0;
+        while (keybufferhead < keybufferindex) {
+            if (keybuffer[keybufferhead] == null) {
+                synchronized (keybuffer) {
+                    try {
+                        keybuffer.wait();
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                continue;
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            KeyEvent e = keybuffer[keybufferhead++];
+            ret[i++] = e;
+            if (e.getKeyCode() == code) {
+                break;
+            }
         }
-        String ret = input.getText();
+        return Arrays.copyOf(ret, i);
+    }
+    public static KeyEvent[] getKeyTill(char c) {
+        KeyEvent[] ret = new KeyEvent[256];
+        byte i = 0;
+        while (keybufferhead < keybufferindex) {
+            Log.log("head: " + keybufferhead);
+            if (keybuffer[keybufferhead] == null) {
+                synchronized (keybuffer) {
+                    try {
+                        keybuffer.wait();
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                continue;
+            }
+            KeyEvent e = keybuffer[keybufferhead++];
+            ret[i++] = e;
+            if (e.getKeyChar() == c) {
+                break;
+            }
+        }
+        return Arrays.copyOf(ret, i);
+    }
+    public static void clearBuffer(){
+        keybufferhead = 0;
+        keybufferindex = 0;
+    }
+    public static String getLine(){
+        synchronized (enterLock) {
+            try {
+                enterLock.wait();
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        return Io.transcribe(getRemainingKeys());
+    }
+    public static KeyEvent[] getRemainingKeys(){
+        KeyEvent[] ret = new KeyEvent[256];
+        byte i = 0;
+        while(keybufferhead<keybufferindex){
+            ret[i++] = keybuffer[keybufferhead++];
+        }
+        return ret;
+    }
+    public static String input() {
+        if (!input.isEditable()) input.setEditable(true);
+        synchronized (enterLock) {
+            try {
+                enterLock.wait();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        String ret = input.getText().trim();
+        clearBuffer();
         input.setText("");
         return ret;
     }
-
+    public static void lockInput(){
+        input.setEditable(false);
+    }
+    public static void unlockInput(){
+        input.setEditable(true);
+    }
     private static void centerText(JTextPane textPane) {
         StyledDocument doc = textPane.getStyledDocument();
         SimpleAttributeSet center = new SimpleAttributeSet();
@@ -107,19 +194,19 @@ public class Graphics {
         message.setText(msg);
     }
     public static void cheatsOn(){
-        panel.add(cheats);
+        cheats.setVisible(true);
     }
     public static void showCheats(String msg){
         cheats.setText(msg);
     }
     public static KeyEvent getKey(){
         try {
-            synchronized (lock) {
-                lock.wait();
+            synchronized (keybuffer) {
+                keybuffer.wait();
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        return lastkey;
+        return keybuffer[keybufferhead++];
     }
 }

@@ -1,4 +1,3 @@
-
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
 
@@ -22,26 +21,34 @@ public class HumanPlayer extends Player {
     public void takeTurn(){
         Log.log("Starting player turn");
         bag.fill(hand);
+        Graphics.showHand(hand);
         boolean valid = false;
+        String word=null;
         while(!valid){
-            if(!Io.GUI){
+            word = Io.readLine();
+            if(!Io.isGUI()){
                 Io.println("Hand is "+hand);
             }
             try{
                 if(cheats){
-                    Io.println(trie.viable(hand));
-                    Io.println("best word is: "+trie.best(trie.viable(hand).toArray(new String[0]))+" worth "+trie.checkPoint(trie.best(trie.viable(hand).toArray(new String[0]))));
+                    Graphics.showCheats(trie.viable(hand)+"\nbest word is: "+trie.best(trie.viable(hand).toArray(new String[0]))+" worth "+trie.checkPoint(trie.best(trie.viable(hand).toArray(new String[0]))));
                 }
-                String word = Io.readLine();
+                if(Io.isGUI()){
+                    Graphics.lockInput();
+                }
                 if(word.charAt(0)=='!'){
                     if(word.contains("cheats")){
                         if(word.contains("on")){
+                            Graphics.cheatsOn();
                             cheats = true;
                             Io.println("Cheats enabled");
                         }else{
                             cheats = false;
                             Io.println("Cheats disabled");
                         }
+                    }
+                    if(word.contains("showbuf")){
+                        Log.log("Buffer is "+Arrays.toString(Io.getBuffer()));
                         continue;
                     }
                     if(word.contains("exchange")){
@@ -62,93 +69,16 @@ public class HumanPlayer extends Player {
                         Io.println("Word is "+trie.isWord(word.substring(8)));
                         continue;
                     }
-                }
-                boolean alpha=true;
-                for(char c : word.toCharArray()){
-                    if(c<'a' || c>'z'){
-                        Io.println("Invalid characters contained: "+c);
-                        alpha = false;
-                        break;
-                    }
-                }
-                if(!alpha){
+                    word="";
                     continue;
                 }
                 if(trie.isWord(word) && hand.contains(word)){
                     valid = true;
                     Io.println("Valid word!\nWord is worth "+trie.checkPoint(word)+" points");
-                    if(!Io.GUI){
-                        Log.print("Enter x:");
-                        int x = Integer.parseInt(System.console().readLine());
-                        Log.print("Enter y:");
-                        int y = Integer.parseInt(System.console().readLine());
-                        Log.print("Enter orientation:");
-                        Orientation orientation=null;
-                        while(true){
-                            try{
-                                orientation = Orientation.valueOf(System.console().readLine().toUpperCase());
-                                break;
-                            }catch(IllegalArgumentException e){
-                                Io.println("Accepted orientations are: " + Arrays.toString(Orientation.values()));
-                                Log.print("Invalid orientation, try again:");
-                            }
-                        }
-                        Log.print("Enter offset:");
-                        int offset = Integer.parseInt(System.console().readLine());
-                        if(board.fits(x, y, word, orientation)){
-                            board.play(x, y, word, orientation, offset);
-                            hand.play(word);
-                            Io.println("Word played!");
-                            Log.log("\n"+board);
-                        }else{
-                            Io.println("Word does not fit!");
-                            valid = false;
-                            continue;
-                        }
-                        Io.println("Hand is now "+hand);
-                    }else{
-                        Io.println("move with arrow keys, spin with z, enter to confirm");
-                        //set position
-                        int x=0;
-                        int y=0;
-                        Orientation orientation = Orientation.HORIZONTAL;
-                        int k;
-                        while (true) { 
-                            k=Io.getKeyCode();
-                            if(k==0){
-                                continue;
-                            }else{
-                                Log.log("Key pressed: "+k);
-                            }
-                            if(k==KeyEvent.VK_UP){
-                                y--;
-                            }
-                            if(k==KeyEvent.VK_DOWN){
-                                y++;
-                            }
-                            if(k==KeyEvent.VK_LEFT){
-                                x--;
-                            }
-                            if(k==KeyEvent.VK_RIGHT){
-                                x++;
-                            }
-                            if(k==KeyEvent.VK_Z){
-                                orientation = orientation.opposite();
-                            }
-                            if(k==KeyEvent.VK_ENTER){
-                                break;
-                            }
-                            Graphics.showBoard(board.overlay(x, y, orientation, word));
-                        }
-                    }
                 }else{
                     Io.println(trie.isWord(word)?"You don't have enough letters!":"Word does not exist!");
                 }
-            }catch(NumberFormatException e){
-                Io.println("Invalid input!");
-                valid = false;
-            }
-            catch(StringIndexOutOfBoundsException e){
+            }catch(NumberFormatException | StringIndexOutOfBoundsException e){
                 Io.println("Invalid input!");
                 valid = false;
             }
@@ -158,5 +88,81 @@ public class HumanPlayer extends Player {
                 Runtime.getRuntime().exit(1);
             }
         }
+        boolean fits=false;
+        while(!fits){
+            if(!Io.isGUI()){
+                Log.print("Enter x:");
+                int x = Integer.parseInt(System.console().readLine());
+                Log.print("Enter y:");
+                int y = Integer.parseInt(System.console().readLine());
+                Log.print("Enter orientation:");
+                Orientation orientation=null;
+                while(true){
+                    try{
+                        orientation = Orientation.valueOf(System.console().readLine().toUpperCase());
+                        break;
+                    }catch(IllegalArgumentException e){
+                        Io.println("Accepted orientations are: " + Arrays.toString(Orientation.values()));
+                        Log.print("Invalid orientation, try again:");
+                    }
+                }
+                Log.print("Enter offset:");
+                int offset = Integer.parseInt(System.console().readLine());
+                if(board.fits(x, y, word, orientation)){
+                    board.play(x, y, word, orientation, offset);
+                    hand.play(word);
+                    Io.println("Word played!");
+                    Log.log("\n"+board);
+                }else{
+                    Io.println("Word does not fit!");
+                    valid = false;
+                    continue;
+                }
+                Io.println("Hand is now "+hand);
+            }else{
+                Io.println("move with arrow keys, spin with z, enter to confirm");
+                //set position
+                int x=0;
+                int y=0;
+                Orientation orientation = Orientation.HORIZONTAL;
+                int k;
+                while (true) { 
+                    k=Graphics.getKey().getKeyCode();
+                    if (k == 0) {
+                        continue;
+                    } else {
+                        Log.log("Key pressed: " + k);
+                    }
+                    if (k == KeyEvent.VK_UP) {
+                        y--;
+                    }
+                    if (k == KeyEvent.VK_DOWN) {
+                        y++;
+                    }
+                    if (k == KeyEvent.VK_LEFT) {
+                        x--;
+                    }
+                    if (k == KeyEvent.VK_RIGHT) {
+                        x++;
+                    }
+                    if (k == KeyEvent.VK_Z) {
+                        orientation = orientation.opposite();
+                    }
+                    if (k == KeyEvent.VK_ENTER) {
+                        fits = board.placeable(x, y, word, orientation);
+                        if(fits){
+                            break;
+                        }else{
+                            Io.println("Word does not fit!");
+                        }
+                    }
+                    Log.log(board.overlay(x, y, orientation, word));
+                    Graphics.showBoard(board.overlay(x, y, orientation, word));
+                }
+                hand.play(word);
+                board.play(x, y, word, orientation, 0);
+            }
+        }
+        Log.log("Ending player turn");
     }
 }

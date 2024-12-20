@@ -59,6 +59,7 @@ public class TileBag {
             try {
                 fi.close();
             } catch (IOException ex) {
+            } catch (NullPointerException ex) {
             }
         }
     }

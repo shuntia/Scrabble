@@ -11,7 +11,11 @@ public class Board {
         this.height = height;
         board = new char[width][height];
     }
-
+    public void set(char[][] board){
+        this.board = board;
+        width = board.length;
+        height = board[0].length;
+    }
     public void set(int x, int y, char c) {
         board[x + width / 2][y + height / 2] = c;
     }
@@ -59,7 +63,7 @@ public class Board {
         for (int i = 0; i < height; i++) {
             str.append(String.format("%2d", i - height / 2)).append(" ");
             for (int j = 0; j < width; j++) {
-                str.append(board[j][i]-'a'>=0? board[j][i] : ' ');
+                str.append(board[j][i]-'a'>=0? Character.toUpperCase(board[j][i]) : ' ');
                 if(i==height/2 && j==width/2){
                     str.append("* ");
                 }else{
@@ -107,15 +111,7 @@ public class Board {
 
     public boolean placeable(int x, int y, String word, Orientation orientation){
         if(board[width/2][height/2]==0){
-            switch(orientation){
-                case HORIZONTAL -> {
-                    return x<=width/2 && x+word.length()>=width/2;
-                }
-                case VERTICAL -> {
-                    return y<=height/2 && y+word.length()>=height/2;
-                }
-                default -> throw new IllegalArgumentException("Unexpected orientation: " + orientation);
-            }
+            return overlay(x, y, orientation, word).get(0,0)!=0;
         }
         if(!fits(x, y, word, orientation)){
             return false;
@@ -243,13 +239,23 @@ public class Board {
         return new int[]{x-offset*dx, y-offset*dy};
     }
     public Board overlay(int x, int y, Orientation o, String word){
-        int w=width/2, h=height/2;
-        Board overlay = new Board(width, height, trie);
-        for(int i=-w; i<w; i++){
-            for(int j=-h; j<h; j++){
-                overlay.set(i, j, word.charAt(i));
+        Board overlay = this.clone();
+        word = word.strip();
+        for(int i=0;i<word.length();i++){
+            try{overlay.set(x+i*o.dx, y+i*o.dy, word.charAt(i));}catch(ArrayIndexOutOfBoundsException e){
+                Log.log("Tried to overlay using "+x+", "+y+" "+o+" but failed");
             }
         }
         return overlay;
+    }
+    @Override
+    public Board clone(){
+        Board clone = new Board(width, height, trie);
+        for(int i=0; i<width; i++){
+            for(int j=0; j<height; j++){
+                clone.set(i-width/2, j-height/2, board[i][j]);
+            }
+        }
+        return clone;
     }
 }
