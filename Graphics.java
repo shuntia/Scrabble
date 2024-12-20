@@ -12,7 +12,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 public class Graphics {
-    private static final Object enterLock;
+    public static final Object enterLock;
     private static final JFrame frame;
     private static final JPanel panel;
     private static final JTextPane board;
@@ -70,8 +70,6 @@ public class Graphics {
         input.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                Log.log(e.getKeyCode());
-                Log.log(e.getKeyChar());
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     synchronized (enterLock) {
                         enterLock.notify();
@@ -169,7 +167,7 @@ public class Graphics {
         String ret = input.getText().trim();
         clearBuffer();
         input.setText("");
-        return ret;
+        return ret.toLowerCase();
     }
     public static void lockInput(){
         input.setEditable(false);
@@ -186,6 +184,9 @@ public class Graphics {
 
     public static void showBoard(Board b){
         board.setText(b.toString());
+    }
+    public static void showBoard(String b){
+        board.setText(b);
     }
     public static void showHand(Hand h){
         hand.setText(h.toString());

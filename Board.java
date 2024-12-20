@@ -129,10 +129,17 @@ public class Board {
             if(board[nx][ny]!=word.charAt(i)){
                 same=false;
             }
-            String around = around(nx, ny, word.charAt(i));
-            if(around!=null){
-                if(!trie.isWord(around)){
-                    Log.log("Word "+around+" is not a word");
+            String aroundx = horiz(nx, ny, word.charAt(i));
+            String aroundy = vert(nx, ny, word.charAt(i));
+            if(aroundx!=null){
+                if(!trie.isWord(aroundx)){
+                    Log.log("Word "+aroundx+" is not a word");
+                    return false;
+                }
+            }
+            if(aroundy!=null){
+                if(!trie.isWord(aroundy)){
+                    Log.log("Word "+aroundy+" is not a word");
                     return false;
                 }
             }
@@ -179,6 +186,38 @@ public class Board {
         }
         return str.isEmpty() ? null : str.toString();
         }
+        public String horiz(int x, int y, char center) {
+            StringBuilder str = new StringBuilder();
+            // horizontally existing
+            if (get(x - 1, y) != 0 || get(x + 1, y) != 0) {
+                // traverse to the left edge
+                while (x > 0 && get(x - 1, y) != 0) {
+                x--;
+                }
+                // traverse to the right edge
+                while (x < width && get(x, y) != 0) {
+                str.append(get(x, y));
+                x++;
+                }
+            }
+            return str.isEmpty() ? null : str.toString();
+            }
+            public String vert(int x, int y, char center) {
+                StringBuilder str = new StringBuilder();
+                // vertically existing
+                if (get(x, y - 1) != 0) {
+                    // traverse to the top edge
+                    while (y > 0 && get(x, y - 1) != 0) {
+                    y--;
+                    }
+                    // traverse to the bottom edge
+                    while (y < height && get(x, y) != 0) {
+                    str.append(get(x, y));
+                    y++;
+                    }
+                }
+                return str.isEmpty() ? null : str.toString();
+                }
 
         public Orientation adjacent(int x, int y) {
         if (get(x - 1, y) != 0 || get(x + 1, y) != 0) {

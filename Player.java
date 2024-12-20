@@ -4,6 +4,7 @@ abstract class Player {
     TileBag bag;
     WordTrie trie;
     Board board;
+    String name;
     public Player(TileBag bag, WordTrie trie, Board board){
         this.bag = bag;
         this.trie = trie;
@@ -14,4 +15,7 @@ abstract class Player {
     public void takeTurn(){
         throw new UnsupportedOperationException();
     };
+    public void setName(String name){
+        this.name=name;
+    }
 }

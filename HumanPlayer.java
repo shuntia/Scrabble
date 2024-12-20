@@ -2,7 +2,6 @@ import java.awt.event.KeyEvent;
 import java.util.Arrays;
 
 public class HumanPlayer extends Player {
-    String name;
     boolean cheats = false;
     public HumanPlayer(String name, TileBag bag, WordTrie trie, Board board) {
         super(bag, trie, board);
@@ -22,10 +21,12 @@ public class HumanPlayer extends Player {
         Log.log("Starting player turn");
         bag.fill(hand);
         Graphics.showHand(hand);
+        Graphics.showBoard(board);
         boolean valid = false;
         String word=null;
         while(!valid){
             word = Io.readLine();
+            Log.log("Input: "+word);
             if(!Io.isGUI()){
                 Io.println("Hand is "+hand);
             }
@@ -64,6 +65,9 @@ public class HumanPlayer extends Player {
                     if(word.contains("quit")){
                         Io.println("Player "+name+" has quit");
                         Runtime.getRuntime().exit(0);
+                    }
+                    if(word.contains("help")){
+                        Io.println("Commands are: !showbuf, !exchange, !pass, !quit, !help, !isword");
                     }
                     if(word.contains("isword")){
                         Io.println("Word is "+trie.isWord(word.substring(8)));
@@ -155,6 +159,11 @@ public class HumanPlayer extends Player {
                         }else{
                             Io.println("Word does not fit!");
                         }
+                    }
+                    if (k == KeyEvent.VK_ESCAPE) {
+                        Log.log("Player "+name+" has revoked input");
+                        Graphics.showBoard(board);
+                        this.takeTurn();
                     }
                     Log.log(board.overlay(x, y, orientation, word));
                     Graphics.showBoard(board.overlay(x, y, orientation, word));

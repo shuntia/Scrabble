@@ -1,15 +1,18 @@
+import java.util.Arrays;
 
+public class Main {
+    private static WordTrie trie;
+    private static TileBag bag;
+    private static Board board;
 
-
-public class Main{
-    public static void main(String[] args){
+    public static void main(String[] args) {
         log("init");
         log("loading dictionary");
-        WordTrie trie = new WordTrie();
+        trie = new WordTrie();
         trie.loadEverything();
         log("dictionary loaded");
         log("loading bag");
-        TileBag bag = new TileBag();
+        bag = new TileBag();
         log("bag loaded");
         log("Starting tests...");
         log("is 'hello' a word? " + trie.isWord("hello"));
@@ -21,41 +24,33 @@ public class Main{
         log("how many points is 'world'? " + trie.checkPoint("world"));
         log("how many points is 'scrabble'? " + trie.checkPoint("scrabble"));
         log("What can be made from 'world'? " + trie.viable("world"));
-        log("What can be made from 'scrabble'? " + trie.viable("scrabble"));      log("making board");
-        Board board = new Board(20,20,trie);
+        log("What can be made from 'scrabble'? " + trie.viable("scrabble"));
+        log("making board");
+        board = new Board(20, 20, trie);
         log("board made");
         log("creating player");
-        Player player = new HumanPlayer(bag, trie, board);
+        Player[] players;
         log("player created");
-        log("player taking turn");
-        while(true){
-            Graphics.showBoard(board);
-            Graphics.showHand(player.hand);
-            player.takeTurn();
-        }
-        /*
-        TileBag bag = new TileBag();
-        Hand hand = new Hand(bag);
-        Board board = new Board(20,20);
-        System.out.println(board);
-        System.out.println(hand);
-        boolean valid=false;
-        while(!valid){
-            System.out.println("Enter a word:");
-            String word = System.console().readLine();
-            valid = Dictionary.isWord(word) && hand.contains(word);
-            if(valid){
-                System.out.println("Valid word!");
-                hand.play(word);
-                System.out.println(Dictionary.valueOf(word));
-                board.play(0,0,word,0);
-                System.out.println(board);
-            }else{
-                System.out.println("Invalid word!");
+        log("intro");
+        Graphics.showBoard("Welcome to Scrabble!\n!exchange to exchange\n!pass to pass\n!quit to quit\nPrompt is at the bottom.\n\nPress Enter to continue");
+        Graphics.showMessage("Enter to continue");
+        try {
+            synchronized (Graphics.enterLock) {
+                Graphics.enterLock.wait();
             }
-        }*/
+        } catch (InterruptedException e) {
+            log(e.toString());
+        }
+        try{players=new Player[]{new HumanPlayer("Player 1", bag, trie, board), new ComputerPlayer( bag, trie, board)};}
+        catch(Exception e){log(e.toString());players = new Player[]{new HumanPlayer(bag, trie, board)};}
+        log(players.length + " Players created: " + Arrays.toString(players));
+        log("player taking turn");
+        for (Player p : players) {
+            p.takeTurn();
+        }
     }
-    public static void log(String msg){
+
+    public static void log(String msg) {
         Log.log(msg);
     }
 }
